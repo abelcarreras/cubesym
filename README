@@ -1,0 +1,24 @@
+---------------------------------------------------------
+CUBESYM 0.9
+---------------------------------------------------------
+Program to calculate the continues symmetry measurement (CSM)
+of the electronic density from a Gaussian cube format file
+---------------------------------------------------------
+Installation instructions
+---------------------------------------------------------
+1. Requirements
+Python 2.7 or higher
+Matplotlib
+numpy
+Scipy
+
+2. Run cubesym script to start
+
+---------------------------------------------------------
+Contact info
+---------------------------------------------------------
+Abel Carreras
+abelcarreras83@gmail.com
+
+Department of Materials Science
+Kyoto University
