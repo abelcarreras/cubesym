@@ -1,0 +1,86 @@
+#!/usr/bin/env python
+
+import argparse
+from cubesymapi import Calculation
+from cubesymapi.iofile import get_density_gaussian, get_density_cube, get_density_radial_test
+
+parser = argparse.ArgumentParser(description='SymCube options')
+
+group = parser.add_mutually_exclusive_group(required=True)
+group.add_argument('-c', '--read_cube', metavar='file', type=str, nargs=1,
+                    help='read density from cube file')
+
+group.add_argument('-g', '--read_gaussian', metavar='file', type=str, nargs=1,
+                    help='read density from analytical potential file')
+
+parser.add_argument('-pf', '--plot_full', metavar='z', type=str,
+                   help='Plot full density')
+
+parser.add_argument('-ps', '--plot_slide', metavar='z', type=str,
+                   help='Plot density slide')
+
+parser.add_argument('-o', '--order', metavar='N', type=int, default=1,
+                   help='Rotation order')
+
+parser.add_argument('-m',  metavar='N', type=int, default=0,
+                   help='Get measure')
+
+parser.add_argument('-p', action='store_true',
+                   help='Display plot')
+
+parser.add_argument('-r', action='store_true',
+                    help='Use radial measure')
+
+parser.add_argument('--center', metavar='N', type=float, nargs=3, default=[0, 0, 0],
+                   help='rotation center (default: 0 0 0)')
+
+parser.add_argument('--align', metavar='N', type=float, nargs=3, default=[0, 0, 1],
+                   help='rotation axis (relative to center) (default: 0 0 1)')
+
+parser.add_argument('--r_grid', metavar='N', type=int, nargs=3, default=[20, 20, 20],
+                   help='Grid size used to build cylindical coordinates (default: 20 20 20)')
+
+parser.add_argument('--measure_error', metavar='E', type=str, default="1E-6",
+                   help='Below this value CSM will be set as 0 ')
+
+args = parser.parse_args()
+
+cube_density = None
+ranges = None
+
+if args.read_gaussian:
+    ranges, cube_density = get_density_gaussian(args.read_gaussian[0])
+#    ranges, cube_density = get_density_radial_test()
+
+
+if args.read_cube:
+    ranges, cube_density = get_density_cube(args.read_cube[0])
+
+
+calculation = Calculation(cube_density,
+                          ranges,
+                          order=args.order,
+                          align=args.align,
+                          center=args.center,
+                          radial=args.r,
+                          r_grid=args.r_grid)
+
+
+if args.plot_full:
+    if args.r:
+        calculation.plot_full_rad(float(args.plot_full), rotation=0)
+    else:
+        calculation.plot_full(float(args.plot_full), rotation=0)
+
+if args.plot_slide:
+    if args.r:
+            calculation.plot_slide_rad(float(args.plot_slide), rotation=0)
+    else:
+        calculation.plot_slide(float(args.plot_slide), rotation=0)
+
+if args.m:
+    calculation.get_measure(n_points=args.m, epsabs=1e2, epsrel=1e2, measure_error=float(args.measure_error))
+
+if args.p:
+    calculation.plot_measure()
+
