@@ -1,8 +1,9 @@
 ---------------------------------------------------------
 CUBESYM 0.9
 ---------------------------------------------------------
-Program to calculate the continues symmetry measurement (CSM)
-of the electronic density from a Gaussian cube format file
+Program to calculate the continuous symmetry measurement (CSM)
+of the electronic density along a rotation axis from a
+Gaussian cube format file
 ---------------------------------------------------------
 Installation instructions
 ---------------------------------------------------------
