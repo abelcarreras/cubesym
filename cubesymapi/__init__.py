@@ -1,7 +1,7 @@
 from scipy.interpolate import RegularGridInterpolator
-from scipy import interpolate, optimize
+from scipy import interpolate, optimize, integrate
 
-from scipy import integrate
+import multiprocessing as mp
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -268,6 +268,7 @@ class Calculation:
 
         return self._measure
 
+
     def plot_measure(self):
 
         fig, ax1 = plt.subplots()
@@ -317,7 +318,6 @@ class Calculation:
     def fn_overlap(self):
         if self._fn_overlap is None:
             x, y, z = self._ranges
-
             total_overlap = self.get_total_overlap()
             self._fn_overlap = RegularGridInterpolator((x, y, z), total_overlap, bounds_error=False)
         return self._fn_overlap

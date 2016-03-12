@@ -1,10 +1,10 @@
 import numpy as np
 
-radii= [4, 7]
-position = [0, 0]
-order = [3, 7]
-volume = [2, 1]
-width = [1.0, 1.3]
+radii= [1.15]
+position = [0]
+order = [5]
+volume = [4]
+width = [0.5]
 
 for i, radius in enumerate(radii):
     for angle in range(order[i]):

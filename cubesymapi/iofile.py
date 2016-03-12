@@ -1,10 +1,3 @@
-from scipy.interpolate import RegularGridInterpolator
-from scipy import interpolate, optimize
-
-from scipy import integrate
-import matplotlib.pyplot as plt
-
-
 from numpy import linspace, zeros, array
 import numpy as np
 
