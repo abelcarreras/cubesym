@@ -264,6 +264,13 @@ class Calculation:
                 measure['density'].append(integral_density)
                 measure['overlap'].append(integral_overlap)
 
+            # Total measure
+            total_overlap = integrate.simps(measure['overlap'], measure['coordinate'],even='avg')
+            total_density2 = integrate.simps(measure['density2'], measure['coordinate'],even='avg')
+            total_symmetry = (1-total_overlap/total_density2)*100
+            measure.update({'total_symmetry' : total_symmetry})
+            print ('\nTotal measure: {0}'.format(total_symmetry))
+
             self._measure = measure
 
         return self._measure
