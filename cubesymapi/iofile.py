@@ -33,8 +33,35 @@ def get_density_radial_test():
     return [x, y, z], V
 
 
-
+#A little faster
 def get_density_gaussian(file):
+    gaussian_file = open(file, "r")
+
+    gaussian_data = []
+    for line in gaussian_file.readlines():
+        if line.find('#') == 0:
+            continue
+        gaussian_data.append(line.split())
+
+    limit_data = np.array(gaussian_data[:3] , dtype=float)
+    x = linspace(*limit_data[0, :])
+    y = linspace(*limit_data[1, :])
+    z = linspace(*limit_data[2, :])
+    V = zeros((limit_data[0, 2], limit_data[1, 2], limit_data[2, 2]))
+    V_temp = zeros((limit_data[0, 2], limit_data[1, 2], limit_data[2, 2]))
+
+    potential_data = np.array(gaussian_data[3:], dtype=float)
+
+    for potential in potential_data:
+        V_temp.fill(0)
+        for i, cx in enumerate(x):
+            for j, cy in enumerate(y):
+                for k, cz in enumerate(z):
+                    V_temp[i, j, k] = gauss3d([cx, cy, cz], potential[:3], potential[3], potential[4])
+        V += V_temp
+    return [x, y, z], V
+
+def get_density_gaussian_old(file):
     gaussian_file = open(file, "r")
 
     gaussian_data = []

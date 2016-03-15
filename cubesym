@@ -2,7 +2,7 @@
 
 import argparse
 from cubesymapi import Calculation
-from cubesymapi.iofile import get_density_gaussian, get_density_cube, get_density_radial_test
+from cubesymapi.iofile import get_density_gaussian, get_density_cube
 
 parser = argparse.ArgumentParser(description='SymCube options')
 
