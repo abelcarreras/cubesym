@@ -13,6 +13,10 @@ import rotations
 def z_slides(x, y, z, function):
     return function([x, y, z])
 
+def z_slides_r(y, x, z, function):
+    return function([x, y, z])
+
+
 class Calculation:
 
     def __init__(self,
@@ -241,6 +245,76 @@ class Calculation:
                                                                        miny ,maxy, lambda x: minx, lambda x: maxx,
                                                                        args=(z_slide, self.fn_density),
                                                                        epsabs=epsabs, epsrel=epsrel)
+
+                if abs(integral_density2-integral_overlap) < measure_error:
+                    normalized_measure =0
+                else:
+                    normalized_measure = (1-integral_overlap/integral_density2)*100
+
+                if self._radial:
+                    integral_density *= z_slide
+                    integral_density2 *= z_slide
+                    integral_overlap *=z_slide
+
+                print('{0:15.8f} {1:15.8f} {2:15.8f} {3:15.8f} {4:15.8f}'.format(z_slide,
+                                                                                 normalized_measure,
+                                                                                 integral_overlap,
+                                                                                 integral_density2,
+                                                                                 integral_density))
+
+                measure['symmetry'].append(normalized_measure)
+                measure['coordinate'].append(z_slide)
+                measure['density2'].append(integral_density2)
+                measure['density'].append(integral_density)
+                measure['overlap'].append(integral_overlap)
+
+            # Total measure
+            total_overlap = integrate.simps(measure['overlap'], measure['coordinate'],even='avg')
+            total_density2 = integrate.simps(measure['density2'], measure['coordinate'],even='avg')
+            total_symmetry = (1-total_overlap/total_density2)*100
+            measure.update({'total_symmetry' : total_symmetry})
+            print ('\nTotal measure: {0}'.format(total_symmetry))
+
+            self._measure = measure
+
+        return self._measure
+
+
+    def get_measure_1D(self, n_points=None, epsabs=1e2, epsrel=1e2, measure_error=1E-5, z_coordinate=0):
+
+        if self._measure is None:
+
+            if n_points:
+                measure_points = np.linspace(self._ranges[2][0], self._ranges[2][-1], n_points)
+            else:
+                measure_points = np.linspace(self._ranges[2][0], self._ranges[2][-1], self._radial_grid[2])
+
+
+  #          minx = self._ranges[0][0]
+  #          maxx = self._ranges[0][-1]
+
+            miny= self._ranges[1][0]
+            maxy = self._ranges[1][-1]
+       #     print(minx, maxx)
+       #     print(miny, maxy)
+
+            print('#     coordinate     measure(C{0})       overlap        density2        density'.format(self._order))
+            measure = {'symmetry' : [], 'coordinate' : [], 'overlap' : [], 'density2' : [], 'density' : []}
+            for z_slide in measure_points:
+                [integral_overlap, error_overlap] = integrate.quad(z_slides_r,
+                                                                   miny, maxy,
+                                                                   args=(z_coordinate, z_slide , self.fn_overlap),
+                                                                   epsabs=epsabs, epsrel=epsrel)
+
+                [integral_density2, error_density2] = integrate.quad(z_slides_r,
+                                                                     miny, maxy,
+                                                                     args=(z_coordinate, z_slide, self.fn_density2),
+                                                                     epsabs=epsabs, epsrel=epsrel)
+
+                [integral_density, error_density] = integrate.quad(z_slides_r,
+                                                                   miny, maxy,
+                                                                   args=(z_coordinate, z_slide, self.fn_density),
+                                                                   epsabs=epsabs, epsrel=epsrel)
 
                 if abs(integral_density2-integral_overlap) < measure_error:
                     normalized_measure =0

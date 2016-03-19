@@ -25,6 +25,9 @@ parser.add_argument('-o', '--order', metavar='N', type=int, default=1,
 parser.add_argument('-m',  metavar='N', type=int, default=0,
                    help='Get measure')
 
+parser.add_argument('-rm',  metavar='R', type=str, default=None,
+                   help='1d symmetry measure')
+
 parser.add_argument('-p', action='store_true',
                    help='Display plot')
 
@@ -57,6 +60,9 @@ if args.read_cube:
     ranges, cube_density = get_density_cube(args.read_cube[0])
 
 
+if args.rm:
+    args.r = True
+
 calculation = Calculation(cube_density,
                           ranges,
                           order=args.order,
@@ -64,7 +70,6 @@ calculation = Calculation(cube_density,
                           center=args.center,
                           radial=args.r,
                           r_grid=args.r_grid)
-
 
 if args.plot_full:
     if args.r:
@@ -79,7 +84,11 @@ if args.plot_slide:
         calculation.plot_slide(float(args.plot_slide), rotation=0)
 
 if args.m:
-    calculation.get_measure(n_points=args.m, epsabs=1e2, epsrel=1e2, measure_error=float(args.measure_error))
+    if args.rm is None:
+        calculation.get_measure(n_points=args.m, epsabs=1e2, epsrel=1e2, measure_error=float(args.measure_error))
+    else:
+        calculation.get_measure_1D(n_points=args.m, epsabs=1e2, epsrel=1e2, measure_error=float(args.measure_error), z_coordinate=float(args.rm))
+
 
 if args.p:
     calculation.plot_measure()
