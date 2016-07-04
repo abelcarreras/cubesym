@@ -1,10 +1,15 @@
 import numpy as np
 
-radii= [1.15]
+n=11
+n2=11
+radi = 1/(2*np.sin(np.pi/n))
+radi2 = 1/(2*np.sin(np.pi/n2))
+
+radii= [radi]
 position = [0]
-order = [5]
-volume = [4]
-width = [0.5]
+order = [n]
+volume = [1]
+width = [0.3]
 
 for i, radius in enumerate(radii):
     for angle in range(order[i]):
