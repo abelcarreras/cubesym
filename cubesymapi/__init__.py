@@ -227,7 +227,6 @@ class Calculation:
             maxy = self._ranges[1][-1]
        #     print(minx, maxx)
        #     print(miny, maxy)
-
             print('#     coordinate     measure(C{0})       overlap        density2        density'.format(self._order))
             measure = {'symmetry' : [], 'coordinate' : [], 'overlap' : [], 'density2' : [], 'density' : []}
             for z_slide in measure_points:
