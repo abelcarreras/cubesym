@@ -26,7 +26,7 @@ class Calculation:
                  center=(0, 0, 0),
                  align = (0, 0, 1),
                  radial=False,
-                 r_grid=(20, 20, 20),
+                 r_grid=(50, 50, 50),
                  ):
 
         self._electronic_density = None
@@ -93,20 +93,12 @@ class Calculation:
      #   x, y, z = self._ranges_cart
         x = np.linspace(*self._ranges[0])
         y = np.linspace(*self._ranges[1])
-        z = np.linspace(*self._ranges[2])
 
         Y, X = np.meshgrid(y, x)
-    #    Y, X = np.meshgrid(np.linspace(*self._ranges[1]), np.linspace(*self._ranges[0]))
 
+        density_slide = np.zeros((self._ranges[0][2], self._ranges[1][2]))
 
-        density_slide = self.fn_electronic_density(np.array([[rotations.rotate_align_z([i, j, 0],
-                                                                                       rotation,
-                                                                                       center=self._center,
-                                                                                       align=self._align
-                                                                                       ) for j in y] for i in x]))
-
-        #for val in np.arange(self._ranges[0][0]+step, self._ranges[0][1], step):
-        for val in z[1:]:
+        for val in np.arange(self._ranges[2][0], self._ranges[2][1], step):
             density_slide += self.fn_electronic_density(np.array([[rotations.rotate_align_z([i, j, val],
                                                                                             rotation,
                                                                                             center=self._center,
@@ -122,17 +114,15 @@ class Calculation:
 
 
     def plot_full_rad(self, step, rotation=0):
-      #  x, y, z = self._ranges
-      #  Z, Y = np.meshgrid(z, y)
-        Z, Y = np.meshgrid(np.linspace(*self._ranges[2]), np.linspace(*self._ranges[1]))
-        density_slide = self.fn_electronic_density(np.array([[rotations.rotate_align_z([0, j, k],
-                                                                                       rotation,
-                                                                                       center=self._center,
-                                                                                       align=self._align,
-                                                                                       radial=self._radial
-                                                                                       ) for k in z] for j in y]))
+        x = np.linspace(*self._ranges[0])
+        z = np.linspace(*self._ranges[1])
+        y = np.linspace(*self._ranges[2])
 
-        for val in np.arange(self._ranges[0][0]+step, self._ranges[0][1], step):
+        Z, Y = np.meshgrid(z, y)
+
+        density_slide = np.zeros((self._ranges[0][2], self._ranges[1][2]))
+
+        for val in np.arange(self._ranges[2][0], self._ranges[2][1], step):
             density_slide += self.fn_electronic_density(np.array([[rotations.rotate_align_z([i, j, val],
                                                                                             rotation,
                                                                                             center=self._center,
@@ -141,7 +131,7 @@ class Calculation:
                                                                                             ) for j in y] for i in x]))
         density_slide *=step
 
-        plt.contourf(Y, Z, density_slide)
+        plt.contourf(Z, Y, density_slide)
         if self._radial:
             plt.xlabel("Angle (Radian)")
             plt.ylabel("Radius (Bohr)")
@@ -154,7 +144,9 @@ class Calculation:
 
 
     def plot_slide(self, val, rotation=0):
-        x, y, z = self._ranges_cart
+        x = np.linspace(*self._ranges[0])
+        z = np.linspace(*self._ranges[1])
+        y = np.linspace(*self._ranges[2])
 
         Y, X = np.meshgrid(y, x)
         density_slide = self.fn_electronic_density(np.array([[rotations.rotate_align_z([i, j, val],
@@ -170,7 +162,10 @@ class Calculation:
         plt.show()
 
     def plot_slide_rad(self, val, rotation=0):
-        x, y, z = self._ranges
+        x = np.linspace(*self._ranges[0])
+        z = np.linspace(*self._ranges[1])
+        y = np.linspace(*self._ranges[2])
+
         Z, Y = np.meshgrid(z, y)
         density_slide = self.fn_electronic_density(np.array([[rotations.rotate_align_z([val, j, k],
                                                                                         rotation,
@@ -192,14 +187,10 @@ class Calculation:
 
     def get_density(self):
         if self._density is None:
-            x, y, z = self._ranges
-            print x, y, z
-            if self._radial:
-                x_n = x[-1] - x[-1]
-                y_n = y[-1] - y[-1]
-                np.linspace(x[0], x[-1],x_n*z)
-                np.linspace(x[0], x[-1],y_n*z)
 
+            x = np.linspace(*self._ranges[0])
+            z = np.linspace(*self._ranges[1])
+            y = np.linspace(*self._ranges[2])
 
             self._density = self.fn_electronic_density(np.array([[[rotations.rotate_align_z([i, j, k],
                                                                                   0,
@@ -213,7 +204,10 @@ class Calculation:
     def get_total_overlap(self):
         if self._total_overlap is None:
        #     print('getting_overlap')
-            x, y, z = self._ranges
+            x = np.linspace(*self._ranges[0])
+            z = np.linspace(*self._ranges[1])
+            y = np.linspace(*self._ranges[2])
+
             overlappings = []
             for i in range(self._order):
   #              print('overlap: {0}'.format(i))
@@ -235,15 +229,15 @@ class Calculation:
         if self._measure is None:
 
             if n_points:
-                measure_points = np.linspace(self._ranges[2][0], self._ranges[2][-1], n_points)
+                measure_points = np.linspace(self._ranges[2][0], self._ranges[2][1], n_points)
             else:
-                measure_points = np.linspace(self._ranges[2][0], self._ranges[2][-1], self._radial_grid[2])
+                measure_points = np.linspace(self._ranges[2][0], self._ranges[2][1], self._radial_grid[2])
 
 
             minx = self._ranges[0][0]
-            maxx = self._ranges[0][-1]
+            maxx = self._ranges[0][1]
             miny= self._ranges[1][0]
-            maxy = self._ranges[1][-1]
+            maxy = self._ranges[1][1]
        #     print(minx, maxx)
        #     print(miny, maxy)
 
@@ -304,19 +298,21 @@ class Calculation:
         if self._measure is None:
 
             if n_points:
-                measure_points = np.linspace(self._ranges[2][0], self._ranges[2][-1], n_points)
+                measure_points = np.linspace(self._ranges[2][0], self._ranges[2][1], n_points)
             else:
-                measure_points = np.linspace(self._ranges[2][0], self._ranges[2][-1], self._radial_grid[2])
+                measure_points = np.linspace(self._ranges[2][0], self._ranges[2][1], self._radial_grid[2])
 
 
   #          minx = self._ranges[0][0]
   #          maxx = self._ranges[0][-1]
 
             miny= self._ranges[1][0]
-            maxy = self._ranges[1][-1]
+            maxy = self._ranges[1][1]
        #     print(minx, maxx)
        #     print(miny, maxy)
-
+            print miny
+            print maxy
+            exit()
             print('#     coordinate     measure(C{0})       overlap        density2        density'.format(self._order))
             measure = {'symmetry' : [], 'coordinate' : [], 'overlap' : [], 'density2' : [], 'density' : []}
             for z_slide in measure_points:
@@ -417,7 +413,9 @@ class Calculation:
     @property
     def fn_overlap(self):
         if self._fn_overlap is None:
-            x, y, z = self._ranges
+            x = np.linspace(*self._ranges[0])
+            z = np.linspace(*self._ranges[1])
+            y = np.linspace(*self._ranges[2])
             total_overlap = self.get_total_overlap()
             self._fn_overlap = RegularGridInterpolator((x, y, z), total_overlap, bounds_error=False)
         return self._fn_overlap
@@ -425,7 +423,9 @@ class Calculation:
     @property
     def fn_density2(self):
         if self._fn_density2 is None:
-            x, y, z = self._ranges
+            x = np.linspace(*self._ranges[0])
+            z = np.linspace(*self._ranges[1])
+            y = np.linspace(*self._ranges[2])
 
             density = self.get_density()
             self._fn_density2 = RegularGridInterpolator((x, y, z), np.square(density), bounds_error=False)
@@ -434,7 +434,9 @@ class Calculation:
     @property
     def fn_density(self):
         if self._fn_density is None:
-            x, y, z = self._ranges
+            x = np.linspace(*self._ranges[0])
+            z = np.linspace(*self._ranges[1])
+            y = np.linspace(*self._ranges[2])
 
             density = self.get_density()
             self._fn_density = RegularGridInterpolator((x, y, z), density, bounds_error=False)

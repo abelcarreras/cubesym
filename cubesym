@@ -40,7 +40,7 @@ parser.add_argument('--center', metavar='N', type=float, nargs=3, default=[0, 0,
 parser.add_argument('--align', metavar='N', type=float, nargs=3, default=[0, 0, 1],
                    help='rotation axis (relative to center) (default: 0 0 1)')
 
-parser.add_argument('--r_grid', metavar='N', type=int, nargs=3, default=[20, 20, 20],
+parser.add_argument('--r_grid', metavar='N', type=int, nargs=3, default=[40, 40, 40],
                    help='Grid size used to build cylindical coordinates (default: 20 20 20)')
 
 parser.add_argument('--measure_error', metavar='E', type=str, default="1E-6",
