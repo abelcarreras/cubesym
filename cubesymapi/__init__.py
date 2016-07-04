@@ -48,7 +48,7 @@ class Calculation:
         self._fn_density = None
 
 
-        print('Boundary cartesian')
+        print('Boundary cartesian original cube')
         print(' x: {0} {1}'.format(ranges[0][0], ranges[0][-1]))
         print(' y: {0} {1}'.format(ranges[1][0], ranges[1][-1]))
         print(' z: {0} {1}'.format(ranges[2][0], ranges[2][-1]))
@@ -59,36 +59,45 @@ class Calculation:
         if radial:
             print('Using cylindrical')
 
-
             r1 = np.max([ranges[0][-1]-center[0],center[0]-ranges[0][1]])
             r2 = np.max([ranges[1][-1]-center[1],center[1]-ranges[1][1]])
             r3 = np.max([ranges[2][-1]-center[2],center[2]-ranges[2][1]])
 
             max_rad = np.max([r1, r2, r3])
 
-            r = np.linspace(0, float(max_rad), self._radial_grid[0])
-            long_c = np.linspace(np.linalg.norm(center)-max_rad,np.linalg.norm(center)+max_rad, self._radial_grid[2])
+ #           r = np.linspace(0, float(max_rad), self._radial_grid[0])
+ #           long_c = np.linspace(np.linalg.norm(center)-max_rad, np.linalg.norm(center)+max_rad, self._radial_grid[2])
 
-            angle = np.linspace(0, 2 * np.pi, self._radial_grid[1])
+ #           angle = np.linspace(0, 2 * np.pi, self._radial_grid[1])
      #       r = linspace(0, 15, self._radial_grid[2])
 
-            x = long_c
-            y = angle
-            z = r
-            self._ranges = [x, y, z]
+#            x = long_c
+#            y = angle
+#            z = r
+#            self._ranges = [x, y, z]
+
+            self._ranges = [[np.linalg.norm(center)-max_rad, np.linalg.norm(center)+max_rad, self._radial_grid[2]],
+                            [0, 2 * np.pi, self._radial_grid[1]],
+                            [0, float(max_rad), self._radial_grid[0]]]
 
             print(' z:     {0} {1}'.format(self._ranges[0][0], self._ranges[0][-1]))
             print(' angle: {0} {1}'.format(self._ranges[1][0], self._ranges[1][-1]))
             print(' r:     {0} {1}'.format(self._ranges[2][0], self._ranges[2][-1]))
 
         else:
-            self._ranges = self._ranges_cart
-
+            self._ranges = [[ranges[0][0], ranges[0][-1], len(ranges[0])],
+                            [ranges[1][0], ranges[1][-1], len(ranges[1])],
+                            [ranges[2][0], ranges[2][-1], len(ranges[2])]]
 
     def plot_full(self, step, rotation=0):
-        x, y, z = self._ranges_cart
+     #   x, y, z = self._ranges_cart
+        x = np.linspace(*self._ranges[0])
+        y = np.linspace(*self._ranges[1])
+        z = np.linspace(*self._ranges[2])
 
         Y, X = np.meshgrid(y, x)
+    #    Y, X = np.meshgrid(np.linspace(*self._ranges[1]), np.linspace(*self._ranges[0]))
+
 
         density_slide = self.fn_electronic_density(np.array([[rotations.rotate_align_z([i, j, 0],
                                                                                        rotation,
@@ -96,7 +105,8 @@ class Calculation:
                                                                                        align=self._align
                                                                                        ) for j in y] for i in x]))
 
-        for val in np.arange(self._ranges[0][0]+step, self._ranges[0][-1], step):
+        #for val in np.arange(self._ranges[0][0]+step, self._ranges[0][1], step):
+        for val in z[1:]:
             density_slide += self.fn_electronic_density(np.array([[rotations.rotate_align_z([i, j, val],
                                                                                             rotation,
                                                                                             center=self._center,
@@ -112,8 +122,9 @@ class Calculation:
 
 
     def plot_full_rad(self, step, rotation=0):
-        x, y, z = self._ranges
-        Z, Y = np.meshgrid(z, y)
+      #  x, y, z = self._ranges
+      #  Z, Y = np.meshgrid(z, y)
+        Z, Y = np.meshgrid(np.linspace(*self._ranges[2]), np.linspace(*self._ranges[1]))
         density_slide = self.fn_electronic_density(np.array([[rotations.rotate_align_z([0, j, k],
                                                                                        rotation,
                                                                                        center=self._center,
@@ -121,7 +132,7 @@ class Calculation:
                                                                                        radial=self._radial
                                                                                        ) for k in z] for j in y]))
 
-        for val in np.arange(self._ranges[0][0]+step, self._ranges[0][-1], step):
+        for val in np.arange(self._ranges[0][0]+step, self._ranges[0][1], step):
             density_slide += self.fn_electronic_density(np.array([[rotations.rotate_align_z([i, j, val],
                                                                                             rotation,
                                                                                             center=self._center,
@@ -182,6 +193,14 @@ class Calculation:
     def get_density(self):
         if self._density is None:
             x, y, z = self._ranges
+            print x, y, z
+            if self._radial:
+                x_n = x[-1] - x[-1]
+                y_n = y[-1] - y[-1]
+                np.linspace(x[0], x[-1],x_n*z)
+                np.linspace(x[0], x[-1],y_n*z)
+
+
             self._density = self.fn_electronic_density(np.array([[[rotations.rotate_align_z([i, j, k],
                                                                                   0,
                                                                                   center=self._center,
