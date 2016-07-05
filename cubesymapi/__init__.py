@@ -243,21 +243,13 @@ class Calculation:
             else:
                 measure_points = np.linspace(self._ranges[2][0], self._ranges[2][-1], self._radial_grid[2])
 
-
-            minx = self._ranges[0][0]
-            maxx = self._ranges[0][-1]
-            miny= self._ranges[1][0]
-            maxy = self._ranges[1][-1]
-
+            ranges = [self._ranges[0][0],
+                      self._ranges[0][-1],
+                      self._ranges[1][0],
+                      self._ranges[1][-1]]
 
             print('#     coordinate     measure(C{0})       overlap        density2        density'.format(self._order))
             measure = {'symmetry' : [], 'coordinate' : [], 'overlap' : [], 'density2' : [], 'density' : []}
-
-###########################
- ######################################################### #  def function_measure(z_slide,  minx, maxx, miny, maxy, fn_overlap, fn_density2, fn_density, epsabs, epsrel, measure_error, radial):
- #  def function_measure(z_slide,  minx, maxx, miny, maxy, fn_overlap, epsabs, epsrel):
-
-            ranges = [minx, maxx, miny, maxy]
 
             overlap = {}
             density = {}
@@ -338,7 +330,6 @@ class Calculation:
                 measure_points = np.linspace(self._ranges[2][0], self._ranges[2][-1], n_points)
             else:
                 measure_points = np.linspace(self._ranges[2][0], self._ranges[2][-1], self._radial_grid[2])
-
 
   #          minx = self._ranges[0][0]
   #          maxx = self._ranges[0][-1]
@@ -482,8 +473,6 @@ if __name__ == "__main__":
 
     calculation.plot_slide(2, rotation=0)
 
-
     calculation.plot_slide_rad(0, rotation=0)
-
 
     calculation.plot_measure(30)
