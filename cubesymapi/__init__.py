@@ -25,6 +25,14 @@ def function_multi(angle, center, align, radial, ranges, function_use):
                                                                  ) for k in z] for j in y] for i in x]))
     return {angle:dens_rot}
 
+def function_measure(z_slide, ranges, function_use, epsabs, epsrel):
+    minx, maxx, miny, maxy = ranges
+    [integral, error] = integrate.dblquad(z_slides, miny, maxy, lambda x: minx, lambda x: maxx,
+                                                    args=(z_slide, function_use),
+                                                    epsabs=epsabs, epsrel=epsrel)
+
+    return {z_slide: integral}
+
 
 class Calculation:
 
@@ -199,65 +207,34 @@ class Calculation:
 
 
     def get_total_overlap(self):
-        from multiprocessing import Process, Value, Array
         import multiprocessing
 
         if self._total_overlap is None:
-            x, y, z = self._ranges
 
-###############
             overlappings = {}
 
-            def func_test(angle, center, align, radial, ranges):
-                x, y, z = ranges
-                dens_rot = self.fn_electronic_density(np.array([[[rotations.rotate_align_z([i, j, k],
-                                                                                           angle, center=center,
-                                                                                           align=align,
-                                                                                           radial=radial
-                                                                                           ) for k in z] for j in y] for i in x]))
-                return {angle: dens_rot}
-
             def log_result(result):
-                print ("FINISH")
                 overlappings.update(result)
 
-            print ('found',multiprocessing.cpu_count(), 'CPU')
             pool = multiprocessing.Pool(processes=max(multiprocessing.cpu_count()-1, 1))
-            print('using:', pool._processes)
+     #       print('using {} processes'.format(pool._processes))
             for i in range(self._order):
                 angle = 2*np.pi/self._order * i
                 pool.apply_async(function_multi,
                                  args=(angle, self._center, self._align, self._radial, self._ranges, self.fn_electronic_density,),
-                                 callback = log_result)
-
-            print sorted(overlappings)
+                                 callback=log_result)
             pool.close()
             pool.join()
 
-            print overlappings.keys()
-            overlappings = [overlappings[k] for k in sorted(overlappings)]
-
-######################
-            """
-            overlappings = []
-            for i in range(self._order):
-  #              print('overlap: {0}'.format(i))
-                angle = 2*np.pi/self._order * i
-                dens_rot = self.fn_electronic_density(np.array([[[rotations.rotate_align_z([i, j, k],
-                                                                                 angle, center=self._center,
-                                                                                 align=self._align,
-                                                                                 radial=self._radial
-                                                                                 ) for k in z] for j in y] for i in x]))
-
-                overlappings.append(np.multiply(self.get_density(), dens_rot))
-
-            """
+            overlappings = [np.multiply(self.get_density(),overlappings[k]) for k in sorted(overlappings)]
 
             self._total_overlap = sum(overlappings)/self._order
+
         return self._total_overlap
 
 
     def get_measure(self, n_points=None, epsabs=1e2, epsrel=1e2, measure_error=1E-5):
+        import multiprocessing
 
         if self._measure is None:
 
@@ -271,28 +248,55 @@ class Calculation:
             maxx = self._ranges[0][-1]
             miny= self._ranges[1][0]
             maxy = self._ranges[1][-1]
-       #     print(minx, maxx)
-       #     print(miny, maxy)
+
+
             print('#     coordinate     measure(C{0})       overlap        density2        density'.format(self._order))
             measure = {'symmetry' : [], 'coordinate' : [], 'overlap' : [], 'density2' : [], 'density' : []}
+
+###########################
+ ######################################################### #  def function_measure(z_slide,  minx, maxx, miny, maxy, fn_overlap, fn_density2, fn_density, epsabs, epsrel, measure_error, radial):
+ #  def function_measure(z_slide,  minx, maxx, miny, maxy, fn_overlap, epsabs, epsrel):
+
+            ranges = [minx, maxx, miny, maxy]
+
+            overlap = {}
+            density = {}
+            density2 = {}
+
+            def log_overlap(result):
+                overlap.update(result)
+
+            def log_density(result):
+                density.update(result)
+
+            def log_density2(result):
+                density2.update(result)
+
+            pool = multiprocessing.Pool(processes=max(multiprocessing.cpu_count()-1, 1))
+        #       print('using {} processes'.format(pool._processes))
             for z_slide in measure_points:
-                [integral_overlap, error_overlap] = integrate.dblquad(z_slides,
-                                                                      miny ,maxy, lambda x: minx, lambda x: maxx,
-                                                                      args=(z_slide, self.fn_overlap),
-                                                                      epsabs=epsabs, epsrel=epsrel)
+                pool.apply_async(function_measure,
+                                 args=(z_slide, ranges, self.fn_overlap, epsabs, epsrel),
+                                 callback=log_overlap)
 
-                [integral_density2, error_density2] = integrate.dblquad(z_slides,
-                                                                       miny ,maxy, lambda x: minx, lambda x: maxx,
-                                                                       args=(z_slide, self.fn_density2),
-                                                                       epsabs=epsabs, epsrel=epsrel)
+                pool.apply_async(function_measure,
+                                 args=(z_slide, ranges, self.fn_density2, epsabs, epsrel),
+                                 callback=log_density2)
 
-                [integral_density, error_density] = integrate.dblquad(z_slides,
-                                                                       miny ,maxy, lambda x: minx, lambda x: maxx,
-                                                                       args=(z_slide, self.fn_density),
-                                                                       epsabs=epsabs, epsrel=epsrel)
+                pool.apply_async(function_measure,
+                                 args=(z_slide, ranges, self.fn_density, epsabs, epsrel),
+                                 callback=log_density)
 
+            pool.close()
+            pool.join()
+
+            overlap = [overlap[k] for k in sorted(overlap)]
+            density2 = [density2[k] for k in sorted(density2)]
+            density = [density[k] for k in sorted(density)]
+
+            for integral_overlap, integral_density2, integral_density, z_slide in zip(overlap, density2, density, measure_points):
                 if abs(integral_density2-integral_overlap) < measure_error:
-                    normalized_measure =0
+                    normalized_measure = 0
                 else:
                     normalized_measure = (1-integral_overlap/integral_density2)*100
 
@@ -312,6 +316,7 @@ class Calculation:
                 measure['density2'].append(integral_density2)
                 measure['density'].append(integral_density)
                 measure['overlap'].append(integral_overlap)
+
 
             # Total measure
             total_overlap = integrate.simps(measure['overlap'], measure['coordinate'],even='avg')
