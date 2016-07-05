@@ -17,6 +17,15 @@ def z_slides_r(y, x, z, function):
     return function([x, y, z])
 
 
+def function_multi(angle, center, align, radial, ranges, function_use):
+    x, y, z = ranges
+    dens_rot = function_use(np.array([[[rotations.rotate_align_z([i, j, k], angle, center=center,
+                                                                                   align=align,
+                                                                                   radial=radial
+                                                                 ) for k in z] for j in y] for i in x]))
+    return {angle:dens_rot}
+
+
 class Calculation:
 
     def __init__(self,
@@ -87,9 +96,7 @@ class Calculation:
 
     def plot_full(self, step, rotation=0):
         x, y, z = self._ranges_cart
-
         Y, X = np.meshgrid(y, x)
-
         density_slide = self.fn_electronic_density(np.array([[rotations.rotate_align_z([i, j, 0],
                                                                                        rotation,
                                                                                        center=self._center,
@@ -192,9 +199,46 @@ class Calculation:
 
 
     def get_total_overlap(self):
+        from multiprocessing import Process, Value, Array
+        import multiprocessing
+
         if self._total_overlap is None:
-       #     print('getting_overlap')
             x, y, z = self._ranges
+
+###############
+            overlappings = {}
+
+            def func_test(angle, center, align, radial, ranges):
+                x, y, z = ranges
+                dens_rot = self.fn_electronic_density(np.array([[[rotations.rotate_align_z([i, j, k],
+                                                                                           angle, center=center,
+                                                                                           align=align,
+                                                                                           radial=radial
+                                                                                           ) for k in z] for j in y] for i in x]))
+                return {angle: dens_rot}
+
+            def log_result(result):
+                print ("FINISH")
+                overlappings.update(result)
+
+            print ('found',multiprocessing.cpu_count(), 'CPU')
+            pool = multiprocessing.Pool(processes=max(multiprocessing.cpu_count()-1, 1))
+            print('using:', pool._processes)
+            for i in range(self._order):
+                angle = 2*np.pi/self._order * i
+                pool.apply_async(function_multi,
+                                 args=(angle, self._center, self._align, self._radial, self._ranges, self.fn_electronic_density,),
+                                 callback = log_result)
+
+            print sorted(overlappings)
+            pool.close()
+            pool.join()
+
+            print overlappings.keys()
+            overlappings = [overlappings[k] for k in sorted(overlappings)]
+
+######################
+            """
             overlappings = []
             for i in range(self._order):
   #              print('overlap: {0}'.format(i))
@@ -206,6 +250,8 @@ class Calculation:
                                                                                  ) for k in z] for j in y] for i in x]))
 
                 overlappings.append(np.multiply(self.get_density(), dens_rot))
+
+            """
 
             self._total_overlap = sum(overlappings)/self._order
         return self._total_overlap
