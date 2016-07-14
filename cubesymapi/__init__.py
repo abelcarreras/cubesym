@@ -34,6 +34,15 @@ def function_measure(z_slide, ranges, function_use, epsabs, epsrel):
     return {z_slide: integral}
 
 
+def function_measure_1d(z_coordinate, z_slide, ranges, function_use, epsabs, epsrel):
+    minx, maxx, miny, maxy = ranges
+    [integral, error] = integrate.quad(z_slides_r, miny, maxy,
+                                                   args=(z_coordinate, z_slide, function_use),
+                                                   epsabs=epsabs, epsrel=epsrel)
+
+    return {z_slide: integral}
+
+
 class Calculation:
 
     def __init__(self,
@@ -76,18 +85,33 @@ class Calculation:
         if radial:
             print('Using cylindrical')
 
+    #        r1 = np.max([ranges[0][-1]-center[0],center[0]-ranges[0][1]])
+    #        r2 = np.max([ranges[1][-1]-center[1],center[1]-ranges[1][1]])
+    #        r3 = np.max([ranges[2][-1]-center[2],center[2]-ranges[2][1]])
 
-            r1 = np.max([ranges[0][-1]-center[0],center[0]-ranges[0][1]])
-            r2 = np.max([ranges[1][-1]-center[1],center[1]-ranges[1][1]])
-            r3 = np.max([ranges[2][-1]-center[2],center[2]-ranges[2][1]])
+            corner = [[ranges[0][0], ranges[1][0], ranges[2][0]],
+                    [ranges[0][0], ranges[1][0], ranges[2][-1]],
+                    [ranges[0][0], ranges[1][-1], ranges[2][0]],
+                    [ranges[0][-1], ranges[1][0], ranges[2][0]],
+                    [ranges[0][-1], ranges[1][-1], ranges[2][-1]],
+                    [ranges[0][-1], ranges[1][-1], ranges[2][0]],
+                    [ranges[0][-1], ranges[1][0], ranges[2][-1]],
+                    [ranges[0][0], ranges[1][-1], ranges[2][-1]]
+                    ]
 
-            max_rad = np.max([r1, r2, r3])
+            vector = self._align
+
+            distances = [np.linalg.norm(np.cross(vector, center-np.array(point)))/np.linalg.norm(vector) for point in corner]
+            positions = [-np.dot(center-np.array(point), vector)/np.linalg.norm(vector) for point in corner]
+
+            max_rad = np.max(distances)
+            long_c = np.linspace(np.min(positions),np.max(positions), self._radial_grid[2])
+
+        #    max_rad = np.max([r1, r2, r3])
+        #    long_c = np.linspace(np.linalg.norm(center)-max_rad,np.linalg.norm(center)+max_rad, self._radial_grid[2])
 
             r = np.linspace(0, float(max_rad), self._radial_grid[0])
-            long_c = np.linspace(np.linalg.norm(center)-max_rad,np.linalg.norm(center)+max_rad, self._radial_grid[2])
-
             angle = np.linspace(0, 2 * np.pi, self._radial_grid[1])
-     #       r = linspace(0, 15, self._radial_grid[2])
 
             x = long_c
             y = angle

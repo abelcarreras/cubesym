@@ -92,4 +92,3 @@ if args.m:
 
 if args.p:
     calculation.plot_measure()
-
