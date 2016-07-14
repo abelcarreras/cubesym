@@ -331,7 +331,7 @@ class Calculation:
             density = [density[k] for k in sorted(density)]
 
             for integral_overlap, integral_density2, integral_density, z_slide in zip(overlap, density2, density, measure_points):
-                if abs(integral_density2-integral_overlap) < measure_error:
+                if abs(integral_density2-integral_overlap) < measure_error or integral_density2 == 0:
                     normalized_measure = 0
                 else:
                     normalized_measure = (1-integral_overlap/integral_density2)*100
@@ -426,9 +426,11 @@ class Calculation:
             # Total measure
             total_overlap = integrate.simps(measure['overlap'], measure['coordinate'],even='avg')
             total_density2 = integrate.simps(measure['density2'], measure['coordinate'],even='avg')
+            total_density = integrate.simps(measure['density'], measure['coordinate'],even='avg')
             total_symmetry = (1-total_overlap/total_density2)*100
             measure.update({'total_symmetry' : total_symmetry})
             print ('\nTotal measure: {0}'.format(total_symmetry))
+            print ('\nTotal density: {0}'.format(total_density))
 
             self._measure = measure
 
