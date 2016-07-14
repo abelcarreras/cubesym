@@ -123,6 +123,7 @@ class Calculation:
             print(' r:     {0} {1}'.format(self._ranges[2][0], self._ranges[2][-1]))
 
         else:
+
             self._ranges = self._ranges_cart
 
 
