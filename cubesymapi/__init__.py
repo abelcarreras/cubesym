@@ -257,6 +257,26 @@ class Calculation:
         return self._total_overlap
 
 
+    def get_total_measure(self,  epsabs=1e2, epsrel=1e2):
+# Not working yet
+        ranges = [self._ranges[0][0],
+                  self._ranges[0][-1],
+                  self._ranges[1][0],
+                  self._ranges[1][-1],
+                  self._ranges[2][0],
+                  self._ranges[2][-1]]
+
+        minx, maxx, miny, maxy, minz, maxz = ranges
+        print ranges
+
+        print z_slides(0,0,0,self.fn_density)
+
+        area = integrate.tplquad(z_slides, minx, maxx, lambda y: miny, lambda y: maxy, lambda y, z: minz, lambda y, z: maxz,
+                                 args=(self.fn_density),
+                                 epsabs=epsabs, epsrel=epsrel)
+        print area
+
+
     def get_measure(self, n_points=None, epsabs=1e2, epsrel=1e2, measure_error=1E-5):
         import multiprocessing
 

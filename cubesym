@@ -89,6 +89,5 @@ if args.m:
     else:
         calculation.get_measure_1D(n_points=args.m, epsabs=1e2, epsrel=1e2, measure_error=float(args.measure_error), z_coordinate=float(args.rm))
 
-
 if args.p:
     calculation.plot_measure()
