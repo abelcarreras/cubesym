@@ -96,7 +96,7 @@ class Calculation:
 
         distances = [np.linalg.norm(np.cross(vector, center-np.array(point)))/np.linalg.norm(vector) for point in corner]
         positions = [-np.dot(center-np.array(point), vector)/np.linalg.norm(vector) for point in corner]
-        max_rad = np.min(distances)
+        max_rad = np.max(distances)
 
         print ('Oriented cube bounds')
         if radial:
