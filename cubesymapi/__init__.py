@@ -50,7 +50,7 @@ class Calculation:
                  ranges,
                  order=1,
                  center=(0, 0, 0),
-                 align = (0, 0, 1),
+                 align=(0, 0, 1),
                  radial=False,
                  r_grid=(20, 20, 20),
                  ):
@@ -66,7 +66,7 @@ class Calculation:
         self._total_overlap = None
         self._measure = None
 
-        self._radial_grid = r_grid
+        self._grid = r_grid
 
         self._fn_electronic_density = None
         self._fn_overlap = None
@@ -74,7 +74,7 @@ class Calculation:
         self._fn_density = None
 
 
-        print('Boundary cartesian')
+        print('Input cube bounds (Cartesian)')
         print(' x: {0} {1}'.format(ranges[0][0], ranges[0][-1]))
         print(' y: {0} {1}'.format(ranges[1][0], ranges[1][-1]))
         print(' z: {0} {1}'.format(ranges[2][0], ranges[2][-1]))
@@ -82,6 +82,23 @@ class Calculation:
 
         self._fn_electronic_density = RegularGridInterpolator(self._ranges_cart, electronic_density, bounds_error=False, fill_value=0)
 
+        corner = [[ranges[0][0], ranges[1][0], ranges[2][0]],
+                [ranges[0][0], ranges[1][0], ranges[2][-1]],
+                [ranges[0][0], ranges[1][-1], ranges[2][0]],
+                [ranges[0][-1], ranges[1][0], ranges[2][0]],
+                [ranges[0][-1], ranges[1][-1], ranges[2][-1]],
+                [ranges[0][-1], ranges[1][-1], ranges[2][0]],
+                [ranges[0][-1], ranges[1][0], ranges[2][-1]],
+                [ranges[0][0], ranges[1][-1], ranges[2][-1]]
+                ]
+
+        vector = self._align
+
+        distances = [np.linalg.norm(np.cross(vector, center-np.array(point)))/np.linalg.norm(vector) for point in corner]
+        positions = [-np.dot(center-np.array(point), vector)/np.linalg.norm(vector) for point in corner]
+        max_rad = np.max(distances)
+
+        print ('Oriented cube bounds')
         if radial:
             print('Using cylindrical')
 
@@ -89,29 +106,14 @@ class Calculation:
     #        r2 = np.max([ranges[1][-1]-center[1],center[1]-ranges[1][1]])
     #        r3 = np.max([ranges[2][-1]-center[2],center[2]-ranges[2][1]])
 
-            corner = [[ranges[0][0], ranges[1][0], ranges[2][0]],
-                    [ranges[0][0], ranges[1][0], ranges[2][-1]],
-                    [ranges[0][0], ranges[1][-1], ranges[2][0]],
-                    [ranges[0][-1], ranges[1][0], ranges[2][0]],
-                    [ranges[0][-1], ranges[1][-1], ranges[2][-1]],
-                    [ranges[0][-1], ranges[1][-1], ranges[2][0]],
-                    [ranges[0][-1], ranges[1][0], ranges[2][-1]],
-                    [ranges[0][0], ranges[1][-1], ranges[2][-1]]
-                    ]
 
-            vector = self._align
-
-            distances = [np.linalg.norm(np.cross(vector, center-np.array(point)))/np.linalg.norm(vector) for point in corner]
-            positions = [-np.dot(center-np.array(point), vector)/np.linalg.norm(vector) for point in corner]
-
-            max_rad = np.max(distances)
-            long_c = np.linspace(np.min(positions),np.max(positions), self._radial_grid[2])
+            long_c = np.linspace(np.min(positions), np.max(positions), self._grid[2])
 
         #    max_rad = np.max([r1, r2, r3])
         #    long_c = np.linspace(np.linalg.norm(center)-max_rad,np.linalg.norm(center)+max_rad, self._radial_grid[2])
 
-            r = np.linspace(0, float(max_rad), self._radial_grid[0])
-            angle = np.linspace(0, 2 * np.pi, self._radial_grid[1])
+            r = np.linspace(0, float(max_rad), self._grid[0])
+            angle = np.linspace(0, 2 * np.pi, self._grid[1])
 
             x = long_c
             y = angle
@@ -123,7 +125,21 @@ class Calculation:
             print(' r:     {0} {1}'.format(self._ranges[2][0], self._ranges[2][-1]))
 
         else:
-            self._ranges = self._ranges_cart
+
+            print ('Using Cartesian')
+            z = np.linspace(np.min(positions), np.max(positions), self._grid[2])
+            y = np.linspace(center[1] - max_rad, center[1] + max_rad, self._grid[1])
+            x = np.linspace(center[0] - max_rad, center[0] + max_rad, self._grid[0])
+
+            self._ranges = [x, y, z]
+
+            print(' x:     {0} {1}'.format(self._ranges[0][0], self._ranges[0][-1]))
+            print(' y:     {0} {1}'.format(self._ranges[1][0], self._ranges[1][-1]))
+            print(' z:     {0} {1}'.format(self._ranges[2][0], self._ranges[2][-1]))
+
+  #          exit()
+
+  #          self._ranges = self._ranges_cart
 
 
     def plot_full(self, step, rotation=0):
@@ -285,7 +301,7 @@ class Calculation:
             if n_points:
                 measure_points = np.linspace(self._ranges[2][0], self._ranges[2][-1], n_points)
             else:
-                measure_points = np.linspace(self._ranges[2][0], self._ranges[2][-1], self._radial_grid[2])
+                measure_points = np.linspace(self._ranges[2][0], self._ranges[2][-1], self._grid[2])
 
             ranges = [self._ranges[0][0],
                       self._ranges[0][-1],
@@ -357,9 +373,11 @@ class Calculation:
             # Total measure
             total_overlap = integrate.simps(measure['overlap'], measure['coordinate'],even='avg')
             total_density2 = integrate.simps(measure['density2'], measure['coordinate'],even='avg')
+            total_density = integrate.simps(measure['density'], measure['coordinate'],even='avg')
             total_symmetry = (1-total_overlap/total_density2)*100
             measure.update({'total_symmetry' : total_symmetry})
             print ('\nTotal measure: {0}'.format(total_symmetry))
+            print ('\nTotal density: {0}'.format(total_density))
 
             self._measure = measure
 
@@ -373,7 +391,7 @@ class Calculation:
             if n_points:
                 measure_points = np.linspace(self._ranges[2][0], self._ranges[2][-1], n_points)
             else:
-                measure_points = np.linspace(self._ranges[2][0], self._ranges[2][-1], self._radial_grid[2])
+                measure_points = np.linspace(self._ranges[2][0], self._ranges[2][-1], self._grid[2])
 
   #          minx = self._ranges[0][0]
   #          maxx = self._ranges[0][-1]
