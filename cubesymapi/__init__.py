@@ -106,8 +106,6 @@ class Calculation:
     #        r2 = np.max([ranges[1][-1]-center[1],center[1]-ranges[1][1]])
     #        r3 = np.max([ranges[2][-1]-center[2],center[2]-ranges[2][1]])
 
-
-
         #    max_rad = np.max([r1, r2, r3])
         #    long_c = np.linspace(np.linalg.norm(center)-max_rad,np.linalg.norm(center)+max_rad, self._radial_grid[2])
 
@@ -122,7 +120,6 @@ class Calculation:
             print(' r:     {0} {1} ({2})'.format(self._ranges[2][0], self._ranges[2][-1], self._grid[2]))
 
         else:
-
             print ('Using Cartesian')
             z = np.linspace(np.min(positions), np.max(positions), self._grid[2])
             y = np.linspace(center[1] - max_rad, center[1] + max_rad, self._grid[1])
