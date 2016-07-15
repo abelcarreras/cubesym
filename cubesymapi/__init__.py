@@ -107,22 +107,19 @@ class Calculation:
     #        r3 = np.max([ranges[2][-1]-center[2],center[2]-ranges[2][1]])
 
 
-            long_c = np.linspace(np.min(positions), np.max(positions), self._grid[2])
 
         #    max_rad = np.max([r1, r2, r3])
         #    long_c = np.linspace(np.linalg.norm(center)-max_rad,np.linalg.norm(center)+max_rad, self._radial_grid[2])
 
-            r = np.linspace(0, float(max_rad), self._grid[0])
+            long_c = np.linspace(np.min(positions), np.max(positions), self._grid[2])
             angle = np.linspace(0, 2 * np.pi, self._grid[1])
+            r = np.linspace(0, float(max_rad), self._grid[0])
 
-            x = long_c
-            y = angle
-            z = r
-            self._ranges = [x, y, z]
+            self._ranges = [long_c, angle, r]
 
-            print(' z:     {0} {1}'.format(self._ranges[0][0], self._ranges[0][-1]))
-            print(' angle: {0} {1}'.format(self._ranges[1][0], self._ranges[1][-1]))
-            print(' r:     {0} {1}'.format(self._ranges[2][0], self._ranges[2][-1]))
+            print(' z:     {0} {1} ({2})'.format(self._ranges[0][0], self._ranges[0][-1], self._grid[0]))
+            print(' angle: {0} {1} ({2})'.format(self._ranges[1][0], self._ranges[1][-1], self._grid[1]))
+            print(' r:     {0} {1} ({2})'.format(self._ranges[2][0], self._ranges[2][-1], self._grid[2]))
 
         else:
 
@@ -133,11 +130,9 @@ class Calculation:
 
             self._ranges = [x, y, z]
 
-            print(' x:     {0} {1}'.format(self._ranges[0][0], self._ranges[0][-1]))
-            print(' y:     {0} {1}'.format(self._ranges[1][0], self._ranges[1][-1]))
-            print(' z:     {0} {1}'.format(self._ranges[2][0], self._ranges[2][-1]))
-
-  #          exit()
+            print(' x:     {0} {1} ({2})'.format(self._ranges[0][0], self._ranges[0][-1], self._grid[0]))
+            print(' y:     {0} {1} ({2})'.format(self._ranges[1][0], self._ranges[1][-1], self._grid[1]))
+            print(' z:     {0} {1} ({2})'.format(self._ranges[2][0], self._ranges[2][-1], self._grid[2]))
 
   #          self._ranges = self._ranges_cart
 
