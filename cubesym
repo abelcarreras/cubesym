@@ -47,7 +47,7 @@ parser.add_argument('--measure_error', metavar='E', type=str, default="1E-12",
                    help='Below this value CSM will be set as 0 ')
 
 parser.add_argument('--precision', metavar='E', type=float, default=1E2,
-                   help='Precision used to calculate the integral')
+                   help='Precision used to calculate the integral(defauld: 1e2)')
 
 
 args = parser.parse_args()
