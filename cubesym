@@ -34,17 +34,21 @@ parser.add_argument('-p', action='store_true',
 parser.add_argument('-r', action='store_true',
                     help='Use radial measure')
 
-parser.add_argument('--center', metavar='N', type=float, nargs=3, default=[0, 0, 0],
+parser.add_argument('--center', metavar='N', type=str, default="0,0,0",
                    help='rotation center (default: 0 0 0)')
 
-parser.add_argument('--align', metavar='N', type=float, nargs=3, default=[0, 0, 1],
+parser.add_argument('--align', metavar='N', type=str, default="0,0,1",
                    help='rotation axis (relative to center) (default: 0 0 1)')
 
 parser.add_argument('--grid', metavar='N', type=int, nargs=3, default=[20, 20, 20],
                    help='Grid size used to build oriented coordinates (default: 20 20 20)')
 
-parser.add_argument('--measure_error', metavar='E', type=str, default="1E-6",
+parser.add_argument('--measure_error', metavar='E', type=str, default="1E-12",
                    help='Below this value CSM will be set as 0 ')
+
+parser.add_argument('--precision', metavar='E', type=float, default=1E2,
+                   help='Precision used to calculate the integral')
+
 
 args = parser.parse_args()
 
@@ -62,12 +66,11 @@ if args.read_cube:
 
 if args.rm:
     args.r = True
-
 calculation = Calculation(cube_density,
                           ranges,
                           order=args.order,
-                          align=args.align,
-                          center=args.center,
+                          align=[float(r) for r in args.align.split(",")],
+                          center=[float(r) for r in args.center.split(",")],
                           radial=args.r,
                           r_grid=args.grid)
 
@@ -85,9 +88,9 @@ if args.plot_slide:
 
 if args.m:
     if args.rm is None:
-        calculation.get_measure(n_points=args.m, epsabs=1e2, epsrel=1e2, measure_error=float(args.measure_error))
+        calculation.get_measure(n_points=args.m, epsabs=0, epsrel=args.precision, measure_error=float(args.measure_error))
     else:
-        calculation.get_measure_1D(n_points=args.m, epsabs=1e2, epsrel=1e2, measure_error=float(args.measure_error), z_coordinate=float(args.rm))
+        calculation.get_measure_1D(n_points=args.m, epsabs=0, epsrel=args.precision, measure_error=float(args.measure_error), z_coordinate=float(args.rm))
 
 if args.p:
     calculation.plot_measure()
