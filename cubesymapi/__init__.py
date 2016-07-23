@@ -1,14 +1,12 @@
 from scipy.interpolate import RegularGridInterpolator
 from scipy import interpolate, optimize, integrate
 
-import multiprocessing as mp
+#import multiprocessing as mp
 import matplotlib.pyplot as plt
 import numpy as np
 
 import iofile
 import rotations
-
-#from iofile import *
 
 def z_slides(x, y, z, function):
     return function([x, y, z])
