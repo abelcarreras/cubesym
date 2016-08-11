@@ -133,7 +133,7 @@ class Calculation:
 
 
     def plot_full(self, step, rotation=0):
-        x, y, z = self._ranges_cart
+        x, y, z = self._ranges
         Y, X = np.meshgrid(y, x)
         density_slide = self.fn_electronic_density(np.array([[rotations.rotate_align_z([i, j, 0],
                                                                                        rotation,
@@ -188,7 +188,7 @@ class Calculation:
 
 
     def plot_slide(self, val, rotation=0):
-        x, y, z = self._ranges_cart
+        x, y, z = self._ranges
 
         Y, X = np.meshgrid(y, x)
         density_slide = self.fn_electronic_density(np.array([[rotations.rotate_align_z([i, j, val],
