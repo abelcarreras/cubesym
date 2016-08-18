@@ -96,23 +96,36 @@ def get_density_cube(file):
     ny, ystep = int(cube_data[4].split()[0]), float(cube_data[4].split()[2])
     nz, zstep = int(cube_data[5].split()[0]), float(cube_data[5].split()[3])
 
+    V = np.zeros([nx, ny, nz])
+
     print(natom)
     if int(cube_data[2].split()[0]) < 0:
-        print("Reading MO {0} {1}".format(*cube_data[6+natom].split()))
-        density_data = " ".join(cube_data[6+natom+1:]).split()
+        n_orbitals = int(cube_data[6+natom].split()[0])
+        nl = int(np.ceil((n_orbitals+1)/10.))
+        orbitals = cube_data[6+natom].split()[1:]
+        for i in range(1,nl):
+            orbitals += (cube_data[i+6+natom].split())
+
+        print("Reading MO: {0}".format(' '.join(orbitals)))
+        density_data = " ".join(cube_data[nl+6+natom:]).split()
         w = 2
+
+        for mo in range(n_orbitals):
+            for i in range(nx):
+                for j in range(ny):
+                    for k in range(nz):
+                        V[i, j, k] += pow(float(density_data[i*ny*nz*n_orbitals + j*nz*n_orbitals + k*n_orbitals + mo]), w)
+
 
     else:
         print("Reading Density")
         density_data = " ".join(cube_data[6+natom:]).split()
         w = 1
 
-    V = np.zeros([nx, ny, nz])
-
-    for i in range(nx):
-        for j in range(ny):
-            for k in range(nz):
-                V[i, j, k] = pow(float(density_data[i*ny*nz + j*nz +k]), w)
+        for i in range(nx):
+            for j in range(ny):
+                for k in range(nz):
+                    V[i, j, k] = pow(float(density_data[i*ny*nz + j*nz +k]), w)
 
     cube_file.close()
     x = linspace(xmin, xmin+xstep*nx, nx)
