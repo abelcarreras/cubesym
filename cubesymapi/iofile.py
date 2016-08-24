@@ -43,7 +43,7 @@ def get_density_gaussian(file):
             continue
         gaussian_data.append(line.split())
 
-    limit_data = np.array(gaussian_data[:3] , dtype=float)
+    limit_data = np.array(gaussian_data[:3], dtype=float)
     x = linspace(*limit_data[0, :])
     y = linspace(*limit_data[1, :])
     z = linspace(*limit_data[2, :])
@@ -88,6 +88,75 @@ def get_density_gaussian_old(file):
 
 
 def get_density_cube(file):
+    import mmap
+
+    with open (file, "r+") as f:
+        cube_file = mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ)
+    #    position_number=file_map.find('NIONS =')
+    #    file_map.seek(position_number+7)
+        cube_file.readline()
+        cube_file.readline()
+        line = cube_file.readline()
+
+        natom = int(line.split()[0])
+        xmin, ymin, zmin  = [float(string) for string in line.split()][1:4]
+
+        line = cube_file.readline()
+        nx = int(line.split()[0])
+        xstep = float(line.split()[1])
+        line = cube_file.readline()
+        ny = int(line.split()[0])
+        ystep = float(line.split()[2])
+        line = cube_file.readline()
+        nz = int(line.split()[0])
+        zstep = float(line.split()[3])
+
+        for i in range(abs(natom)):
+            cube_file.readline()
+
+        V = np.zeros([nx, ny, nz])
+
+        if int(natom) < 0:
+
+            line = cube_file.readline()
+            n_orbitals = int(line.split()[0])
+
+            nl = int(np.ceil((n_orbitals+1)/10.))
+            orbitals = line.split()[1:]
+
+            for i in range(1,nl):
+                line = cube_file.readline()
+                orbitals += (line.split())
+
+            print("Reading MO: {0}".format(' '.join(orbitals)))
+            w = 2
+
+        else:
+            w = 1
+            n_orbitals = 1
+            print("Reading Density")
+
+        for i in range(nx):
+
+            line = cube_file.readline()
+            density = line.split()
+            while len(density) < ny*nz*n_orbitals:
+                line = cube_file.readline()
+                density += line.split()
+
+            for j in range(ny):
+                for k in range(nz):
+                    for mo in range(n_orbitals):
+                        V[i, j, k] += pow(float(density[j*nz*n_orbitals + k*n_orbitals + mo]), w)
+
+    x = linspace(xmin, xmin+xstep*nx, nx)
+    y = linspace(ymin, ymin+ystep*ny, ny)
+    z = linspace(zmin, zmin+zstep*nz, nz)
+
+    return [x, y, z], V
+
+
+def get_density_cube_old(file):
     cube_file = open(file, "r")
     cube_data = cube_file.readlines()
     natom = np.abs(int(cube_data[2].split()[0]))
@@ -134,4 +203,7 @@ def get_density_cube(file):
 
     return [x, y, z], V
 
+if __name__ == "__main__":
 
+    get_density_cube('/Users/abel/CIRCULENS/nous_anells/c5h5_pi.cube')
+  #  get_density_cube('/Users/abel/CIRCULENS/nous_anells/c5h5.cube')
