@@ -71,24 +71,21 @@ class Calculation:
         self._fn_density2 = None
         self._fn_density = None
 
-
         print('Input cube bounds (Cartesian)')
         print(' x: {0} {1}'.format(ranges[0][0], ranges[0][-1]))
         print(' y: {0} {1}'.format(ranges[1][0], ranges[1][-1]))
         print(' z: {0} {1}'.format(ranges[2][0], ranges[2][-1]))
 
-
         self._fn_electronic_density = RegularGridInterpolator(self._ranges_cart, electronic_density, bounds_error=False, fill_value=0)
 
-        corner = [[ranges[0][0], ranges[1][0], ranges[2][0]],
-                [ranges[0][0], ranges[1][0], ranges[2][-1]],
-                [ranges[0][0], ranges[1][-1], ranges[2][0]],
-                [ranges[0][-1], ranges[1][0], ranges[2][0]],
-                [ranges[0][-1], ranges[1][-1], ranges[2][-1]],
-                [ranges[0][-1], ranges[1][-1], ranges[2][0]],
-                [ranges[0][-1], ranges[1][0], ranges[2][-1]],
-                [ranges[0][0], ranges[1][-1], ranges[2][-1]]
-                ]
+        corner = [[ranges[0][0],  ranges[1][0],  ranges[2][0]],
+                  [ranges[0][0],  ranges[1][0],  ranges[2][-1]],
+                  [ranges[0][0],  ranges[1][-1], ranges[2][0]],
+                  [ranges[0][-1], ranges[1][0],  ranges[2][0]],
+                  [ranges[0][-1], ranges[1][-1], ranges[2][-1]],
+                  [ranges[0][-1], ranges[1][-1], ranges[2][0]],
+                  [ranges[0][-1], ranges[1][0],  ranges[2][-1]],
+                  [ranges[0][0],  ranges[1][-1], ranges[2][-1]]]
 
         vector = self._align
 
@@ -130,7 +127,6 @@ class Calculation:
             print(' z:     {0} {1} ({2})'.format(self._ranges[2][0], self._ranges[2][-1], self._grid[2]))
 
   #          self._ranges = self._ranges_cart
-
 
     def plot_full(self, step, rotation=0):
         x, y, z = self._ranges
@@ -185,8 +181,6 @@ class Calculation:
         plt.colorbar().set_label("Electronic density (e-/Bohr^3)")
         plt.show()
 
-
-
     def plot_slide(self, val, rotation=0):
         x, y, z = self._ranges
 
@@ -235,7 +229,6 @@ class Calculation:
                                                                                   ) for k in z] for j in y] for i in x]))
         return self._density
 
-
     def get_total_overlap(self):
         import multiprocessing
 
@@ -262,7 +255,6 @@ class Calculation:
 
         return self._total_overlap
 
-
     def get_total_measure(self,  epsabs=1e2, epsrel=1e2):
 # Not working yet
         ranges = [self._ranges[0][0],
@@ -281,7 +273,6 @@ class Calculation:
                                  args=(self.fn_density),
                                  epsabs=epsabs, epsrel=epsrel)
         print area
-
 
     def get_measure(self, n_points=None, epsabs=1e2, epsrel=1e2, measure_error=1E-5):
         import multiprocessing
@@ -373,7 +364,6 @@ class Calculation:
 
         return self._measure
 
-
     def get_measure_1D(self, n_points=None, epsabs=1e2, epsrel=1e2, measure_error=1E-5, z_coordinate=0):
 
         if self._measure is None:
@@ -410,14 +400,17 @@ class Calculation:
                                                                    epsabs=epsabs, epsrel=epsrel)
 
                 if abs(integral_density2-integral_overlap) < measure_error:
-                    normalized_measure =0
+                    normalized_measure = 0
                 else:
-                    normalized_measure = (1-integral_overlap/integral_density2)*100
+                    try:
+                        normalized_measure = (1-integral_overlap/integral_density2)*100
+                    except ZeroDivisionError:
+                        normalized_measure = 0.0
 
                 if self._radial:
                     integral_density *= z_slide
                     integral_density2 *= z_slide
-                    integral_overlap *=z_slide
+                    integral_overlap *= z_slide
 
                 print('{0:15.8f} {1:15.8f} {2:15.8f} {3:15.8f} {4:15.8f}'.format(z_slide,
                                                                                  normalized_measure,
@@ -443,7 +436,6 @@ class Calculation:
             self._measure = measure
 
         return self._measure
-
 
     def plot_measure(self):
 
@@ -520,13 +512,20 @@ class Calculation:
 if __name__ == "__main__":
     #ranges, cube_density = get_density_cube('C3B9.cube')
 
-    ranges, cube_density = iofile.get_density_gaussian('potential')
+    ranges, cube_density = iofile.get_density_gaussian('example/potential')
     #ranges, cube_density = get_density_gaussian()
 
     calculation = Calculation(cube_density, ranges, order=3, align=[0, 0, 1], center=[0, 0, 0], radial=True)
+    #calculation = Calculation(cube_density, ranges)
+
+    data = []
+    for z in np.arange(-10, 10, 0.1):
+        print (z, calculation.fn_density([z, 0, 0]))
+        data.append(calculation.fn_density([0, 0, z])[0])
+    #plt.plot(np.arange(-10, 10, 0.1), data)
 
     calculation.plot_slide(2, rotation=0)
 
     calculation.plot_slide_rad(0, rotation=0)
 
-    calculation.plot_measure(30)
+    calculation.plot_measure()
