@@ -76,7 +76,7 @@ class Calculation:
         print(' y: {0} {1}'.format(ranges[1][0], ranges[1][-1]))
         print(' z: {0} {1}'.format(ranges[2][0], ranges[2][-1]))
 
-        self._fn_electronic_density = RegularGridInterpolator(self._ranges_cart, electronic_density, bounds_error=False, fill_value=0)
+        self._fn_electronic_density = RegularGridInterpolator(self._ranges_cart, electronic_density, bounds_error=False, fill_value=0.0)
 
         corner = [[ranges[0][0],  ranges[1][0],  ranges[2][0]],
                   [ranges[0][0],  ranges[1][0],  ranges[2][-1]],
@@ -471,8 +471,10 @@ class Calculation:
                            label='Asymmetry C{0}'.format(self._order), color='red', linewidth=4)
         #ax2.plot(data['coordinate'], data['density2'], label='Density2')
         dens_p, =ax2.plot(data['coordinate'], data['density'], label='Density', linestyle='--')
+        ax2.set_ylim([0, None])
+
         #ax2.plot(data['coordinate'], data['overlap'], label='Overlap')
-        plt.ylim(0,100)
+        ax1.set_ylim([0, 100])
         plt.legend(handles=[asim_p, dens_p],loc=1)
 
         plt.show()
@@ -487,7 +489,7 @@ class Calculation:
         if self._fn_overlap is None:
             x, y, z = self._ranges
             total_overlap = self.get_total_overlap()
-            self._fn_overlap = RegularGridInterpolator((x, y, z), total_overlap, bounds_error=False)
+            self._fn_overlap = RegularGridInterpolator((x, y, z), total_overlap, bounds_error=False, fill_value=None)
         return self._fn_overlap
 
     @property
@@ -496,7 +498,7 @@ class Calculation:
             x, y, z = self._ranges
 
             density = self.get_density()
-            self._fn_density2 = RegularGridInterpolator((x, y, z), np.square(density), bounds_error=False)
+            self._fn_density2 = RegularGridInterpolator((x, y, z), np.square(density), bounds_error=False, fill_value=None)
         return self._fn_density2
 
     @property
@@ -505,7 +507,7 @@ class Calculation:
             x, y, z = self._ranges
 
             density = self.get_density()
-            self._fn_density = RegularGridInterpolator((x, y, z), density, bounds_error=False)
+            self._fn_density = RegularGridInterpolator((x, y, z), density, bounds_error=False, fill_value=None)
         return self._fn_density
 
 
