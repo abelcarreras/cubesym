@@ -15,8 +15,8 @@ setup(name='cubesym',
       author_email='abelcarreras83@gmail.com',
       packages=['cubesymapi'],
       scripts=['scripts/cubesym',
-               'scripts/create_shapes',
-               'scripts/density_example'],
+               'scripts/create_shapes.py',
+               'scripts/density_example.py'],
       requires=['scipy', 'numpy', 'matplotlib'],
       license='MIT License'
       )
