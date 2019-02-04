@@ -33,12 +33,12 @@ cube = [[-1, -1, -1],
         [-1, 1, 1],
         ]
 
-print "Distance         position"
+print("Distance         position")
 
 for point in cube:
     d = np.linalg.norm(np.cross(vector, center-np.array(point)))/np.linalg.norm(vector)
  #   l = np.dot(vector, np.array(point))
     t = -np.dot(center-np.array(point), vector)/np.linalg.norm(vector)
-    print "{}  {}".format(d, t)
+    print("{}  {}".format(d, t))
 
 exit()

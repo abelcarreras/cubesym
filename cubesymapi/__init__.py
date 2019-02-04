@@ -5,8 +5,8 @@ from scipy import interpolate, optimize, integrate
 import matplotlib.pyplot as plt
 import numpy as np
 
-import iofile
-import rotations
+import cubesymapi.iofile
+import cubesymapi.rotations
 
 def z_slides(x, y, z, function):
     return function([x, y, z])
@@ -265,14 +265,14 @@ class Calculation:
                   self._ranges[2][-1]]
 
         minx, maxx, miny, maxy, minz, maxz = ranges
-        print ranges
+        print(ranges)
 
-        print z_slides(0,0,0,self.fn_density)
+        print(z_slides(0, 0, 0, self.fn_density))
 
         area = integrate.tplquad(z_slides, minx, maxx, lambda y: miny, lambda y: maxy, lambda y, z: minz, lambda y, z: maxz,
                                  args=(self.fn_density),
                                  epsabs=epsabs, epsrel=epsrel)
-        print area
+        print(area)
 
     def get_measure(self, n_points=None, epsabs=1e2, epsrel=1e2, measure_error=1E-5):
         import multiprocessing
@@ -461,7 +461,7 @@ class Calculation:
 
         total_electron = int(fun(data['coordinate'][-1], 0))
 
-        n_step = abs(total_electron/10)+1
+        n_step = abs(total_electron//10)+1
         positions = [optimize.bisect(fun, data['coordinate'][0], data['coordinate'][-1], args=(i, )) for i in range(1, total_electron+1, n_step)]
 
         positions = (np.array(positions) - data['coordinate'][0])/(data['coordinate'][-1] - data['coordinate'][0])
