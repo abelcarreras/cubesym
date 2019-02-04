@@ -8,7 +8,7 @@ Gaussian cube format file
 Installation instructions
 ---------------------------------------------------------
 1. Requirements
-Python 2.7 or higher
+Python 2.7/3.4 or higher
 Matplotlib
 numpy
 Scipy
