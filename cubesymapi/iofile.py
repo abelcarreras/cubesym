@@ -130,7 +130,7 @@ def get_density_cube(file):
                 line = cube_file.readline()
                 orbitals += (line.split())
 
-            print("Reading MO: {0}".format(' '.join(orbitals)))
+            print("Reading MO: {0}".format(b' '.join(orbitals).decode()))
             w = 2
 
         else:

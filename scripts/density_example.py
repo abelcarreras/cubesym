@@ -12,7 +12,7 @@ calculation = Calculation(cube_density, ranges)
 # get density from [x:0, y:0, z:-6] to [x:0, y:0, z:6]
 density_list = []
 for z in np.arange(-6, 6, 0.1):
-    den = calculation.fn_density([0, 0, z])[0]
+    den = calculation.fn_electronic_density([0, 0, z])[0]
     print ('point: {:.2f} {:.2f} {:.2f}'.format(*[0, 0, z]) + ' density: {}'.format(den))
     density_list.append(den)
 
